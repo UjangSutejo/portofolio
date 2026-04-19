@@ -41,6 +41,7 @@ export function PortfolioInteractive({
     "right",
   );
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const mobilePreviewRef = useRef<HTMLDivElement | null>(null);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const activeProject =
@@ -85,6 +86,29 @@ export function PortfolioInteractive({
   }, [activeProject, activeProjectId, previewDirection]);
 
   useEffect(() => {
+    if (!mobilePreviewRef.current || !activeProject || supportsHover) {
+      return;
+    }
+
+    gsap.fromTo(
+      mobilePreviewRef.current,
+      {
+        autoAlpha: 0,
+        y: 18,
+        scale: 0.97,
+      },
+      {
+        autoAlpha: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.32,
+        ease: "power3.out",
+        clearProps: "transform",
+      },
+    );
+  }, [activeProject, supportsHover]);
+
+  useEffect(() => {
     buttonRefs.current.forEach((button, index) => {
       if (!button) {
         return;
@@ -103,7 +127,13 @@ export function PortfolioInteractive({
 
   return (
     <>
-      <section className="order-2 w-full md:order-1 md:w-1/3">
+      <section
+        className={`order-2 w-full transition-all duration-300 ease-out md:order-1 md:w-1/3 ${
+          activeProject && !supportsHover
+            ? "pointer-events-none translate-y-2 opacity-0 blur-[6px]"
+            : "translate-y-0 opacity-100 blur-0"
+        }`}
+      >
         <div
           className="flex w-full flex-col gap-1 border-t border-on-surface/10 md:inline-flex md:w-fit md:border-t-0"
           onMouseLeave={() => {
@@ -166,7 +196,90 @@ export function PortfolioInteractive({
       </section>
 
       <section className="order-1 flex w-full flex-col justify-start pt-2 md:fixed md:top-30 md:right-12 md:w-[calc(66.666667%-6rem)] md:max-w-[48rem] md:pt-0">
-        {activeProject ? (
+        {activeProject && !supportsHover ? (
+          <div className="fixed inset-0 z-30 overflow-y-auto bg-[#ffdbbb]/72 px-6 py-8 backdrop-blur-[16px]">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.32),transparent_58%)]" />
+            <button
+              type="button"
+              aria-label="Close preview"
+              onClick={() => {
+                setActiveProjectId(null);
+              }}
+              className="absolute top-5 right-5 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow-[0_10px_30px_rgba(0,0,0,0.28)]"
+            >
+              <span className="text-2xl leading-none">×</span>
+            </button>
+
+            <div
+              ref={mobilePreviewRef}
+              className="relative z-10 mx-auto flex min-h-full w-full max-w-[18.75rem] flex-col justify-start pt-10"
+            >
+              <div className="rounded-[2.4rem] bg-[#f7f4f1] p-[0.22rem] shadow-[0_36px_90px_rgba(102,73,48,0.22)]">
+                <div className="relative overflow-hidden rounded-[2.15rem] bg-[#f7f4f1]">
+                  <div className="absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.28),transparent)]" />
+
+                  <div className="relative h-[36rem] overflow-hidden rounded-[2.15rem] bg-[linear-gradient(180deg,#9df1eb_0%,#25dbe7_100%)] px-4 pt-7 pb-4 text-[#1f2120]">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.28),transparent_46%)]" />
+                    <div className="absolute top-4 left-4 h-3 w-8 rounded-full bg-[#f05445]" />
+                    <div className="absolute top-4 right-4 h-2.5 w-12 rounded-full bg-[#d5ece9]/80" />
+
+                    <div className="relative mt-7 rounded-[1.35rem] bg-white/72 px-4 py-5 shadow-[0_16px_32px_rgba(20,20,20,0.08)] backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-black/10" />
+                        <div>
+                          <p className="text-sm font-medium">Seyit Yilmaz</p>
+                          <p className="text-[0.62rem] text-black/45">Active 10m ago</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="w-fit rounded-2xl bg-white px-3 py-2 text-xs shadow-sm">
+                          yeah
+                        </div>
+                        <div className="w-[11rem] rounded-2xl bg-white px-3 py-2 text-xs shadow-sm">
+                          Yeah let&apos;s do that
+                        </div>
+                      </div>
+
+                      <div className="mt-4 overflow-hidden rounded-[1.15rem] bg-white p-2 shadow-sm">
+                        <div className="aspect-[4/5] rounded-[0.9rem] bg-[linear-gradient(160deg,#b7d3e0_0%,#eff5fb_100%)]" />
+                      </div>
+
+                      <div className="mt-4 flex justify-start">
+                        <div className="h-16 w-16 rounded-[1rem] bg-white/90 shadow-sm" />
+                      </div>
+
+                      <div className="mt-4 flex justify-end">
+                        <div className="rounded-2xl bg-[#6b7bff] px-3 py-2 text-xs text-white shadow-sm">
+                          Oh yea, one sec!
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="absolute inset-x-4 bottom-4 rounded-[1.35rem] bg-white/18 px-4 py-3 backdrop-blur-sm">
+                      <div className="flex items-center justify-between text-[0.62rem] uppercase tracking-[0.12em] text-black/45">
+                        <span>{activeProject.year}</span>
+                        <span>{activeProject.preview.label}</span>
+                      </div>
+                      <div className="mt-3 flex items-center gap-3">
+                        <div className="h-10 flex-1 rounded-full bg-white/65" />
+                        <div className="h-10 w-10 rounded-full bg-white/75" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 text-left">
+                <div className="font-display text-[2.2rem] leading-[0.92] tracking-[-0.045em] text-[#1f1813] uppercase">
+                  {activeProject.projectHeadline}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {activeProject && supportsHover ? (
           <div className="mb-10 flex justify-center md:pointer-events-none md:fixed md:top-1/2 md:left-1/2 md:z-10 md:mb-0 md:w-auto md:-translate-x-1/2 md:-translate-y-1/2 md:justify-center">
             <div className="w-full max-w-[14.4rem]">
               <div
