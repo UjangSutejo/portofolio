@@ -1,0 +1,37 @@
+@import url("https://fonts.cdnfonts.com/css/satoshi");
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #ffdbbb;
+  --color-foreground: #664930;
+  --color-on-surface: #664930;
+  --color-secondary: #997e67;
+  --color-surface-container-low: #f7d2b2;
+  --color-primary: #664930;
+  --font-sans: var(--font-inter);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: #ffdbbb;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background: #ffdbbb;
+  color: #664930;
+  font-family: var(--font-inter), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.font-display {
+  font-family: "Satoshi", var(--font-inter), sans-serif;
+}
