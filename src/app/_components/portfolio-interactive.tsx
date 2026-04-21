@@ -2,37 +2,85 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import type { Project } from "../data/portfolio-content";
 
 const HOVER_CAPABLE_QUERY = "(hover: hover) and (pointer: fine)";
 const PREVIEW_OFFSET_X = 42;
 const PREVIEW_SCALE_FROM = 0.96;
-const ACTIVE_BUTTON_SHADOW = "0 22px 52px rgba(102, 73, 48, 0.18)";
-
-type Project = {
-  id: string;
-  title: string;
-  year: string;
-  projectHeadline: string;
-  preview: {
-    type: "placeholder";
-    label: string;
-    note: string;
-  };
-};
 
 type PortfolioInteractiveProps = {
   projects: Project[];
   headerLinks: string[];
   headlineName: string;
-  companyName: string;
   bio: string;
 };
+
+function PreviewGridPlaceholder() {
+  return (
+    <div className="grid grid-cols-3 gap-1.5">
+      {Array.from({ length: 12 }).map((_, index) => (
+        <div
+          key={index}
+          className="aspect-square rounded-[0.52rem] bg-white/80"
+          style={{
+            opacity: 0.42 + ((index % 4) + 1) * 0.1,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function DesktopPreviewScreen({ project }: { project: Project }) {
+  if (project.preview.type === "video") {
+    return (
+      <div className="absolute inset-0 overflow-hidden rounded-[2rem] bg-transparent">
+        <video
+          className="h-full w-full object-cover object-top"
+          src={project.preview.src}
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),transparent)]" />
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.38),transparent_72%)]" />
+
+      <div className="relative mt-12 rounded-[1.05rem] bg-white px-3 py-2.5 text-[#1f2120] shadow-[0_10px_24px_rgba(23,23,23,0.08)]">
+        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[#d9d1c9]" />
+        <p className="text-center text-xs font-medium">{project.preview.label}</p>
+      </div>
+
+      <div className="relative mt-3 overflow-hidden rounded-[1.05rem] bg-white/16 p-2 backdrop-blur-sm">
+        <PreviewGridPlaceholder />
+      </div>
+
+      <div className="relative mt-4 rounded-[1.05rem] bg-white/18 p-3.5 backdrop-blur-sm">
+        <p className="text-[0.65rem] font-light uppercase tracking-[0.12em] text-white/78">
+          {project.preview.note}
+        </p>
+        <h2 className="mt-3 min-h-[4.25rem] text-[1.75rem] font-medium leading-tight">
+          {project.title}
+        </h2>
+        <p className="mt-5 max-w-[9rem] text-[0.92rem] leading-relaxed text-white/80">
+          Preview slot siap. Nanti tinggal sambungkan image atau video project
+          asli.
+        </p>
+      </div>
+    </>
+  );
+}
 
 export function PortfolioInteractive({
   projects,
   headerLinks,
   headlineName,
-  companyName,
   bio,
 }: PortfolioInteractiveProps) {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
@@ -42,7 +90,6 @@ export function PortfolioInteractive({
   );
   const previewRef = useRef<HTMLDivElement | null>(null);
   const mobilePreviewRef = useRef<HTMLDivElement | null>(null);
-  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const activeProject =
     projects.find((project) => project.id === activeProjectId) ?? null;
@@ -108,49 +155,29 @@ export function PortfolioInteractive({
     );
   }, [activeProject, supportsHover]);
 
-  useEffect(() => {
-    buttonRefs.current.forEach((button, index) => {
-      if (!button) {
-        return;
-      }
-
-      const isActive = projects[index]?.id === activeProjectId;
-
-      gsap.to(button, {
-        duration: isActive ? 0.28 : 0.22,
-        ease: "power2.out",
-        y: isActive ? -1 : 0,
-        boxShadow: isActive ? ACTIVE_BUTTON_SHADOW : "0 0 0 rgba(102, 73, 48, 0)",
-      });
-    });
-  }, [activeProjectId, projects]);
-
   return (
     <>
       <section
-        className={`order-2 w-full transition-all duration-300 ease-out md:order-1 md:w-1/3 ${
+        className={`portfolio-desktop-list order-2 w-full transition-all duration-300 ease-out md:order-1 md:flex md:min-h-screen md:w-5/12 md:flex-none md:items-end md:justify-center md:px-10 md:pt-0 ${
           activeProject && !supportsHover
             ? "pointer-events-none translate-y-2 opacity-0 blur-[6px]"
             : "translate-y-0 opacity-100 blur-0"
         }`}
       >
         <div
-          className="flex w-full flex-col gap-1 border-t border-on-surface/10 md:inline-flex md:w-fit md:border-t-0"
+          className="flex w-full flex-col gap-1 border-t border-on-surface/10 md:w-[16.75rem] md:border-t-0"
           onMouseLeave={() => {
             if (supportsHover) {
               setActiveProjectId(null);
             }
           }}
         >
-          {projects.map((project, index) => {
+          {projects.map((project) => {
             const isActive = project.id === activeProjectId;
 
             return (
               <button
                 key={project.id}
-                ref={(element) => {
-                  buttonRefs.current[index] = element;
-                }}
                 type="button"
                 onMouseEnter={(event) => {
                   if (supportsHover) {
@@ -177,16 +204,16 @@ export function PortfolioInteractive({
                     setActiveProjectId(null);
                   }
                 }}
-                className={`inline-flex w-full cursor-pointer items-center justify-between gap-6 border-b border-on-surface/10 px-5 py-4 text-left transition-[background-color,border-radius] duration-300 md:w-fit md:justify-start md:border-b-0 ${
+                className={`inline-flex w-full cursor-pointer items-start justify-between gap-6 border-b border-on-surface/10 px-5 py-4 text-left transition-[background-color,border-radius,box-shadow,transform] duration-300 ease-out md:border-b-0 ${
                   isActive
-                    ? "rounded-[1.75rem] bg-white/55"
-                    : "rounded-[1.75rem] bg-transparent"
+                    ? "translate-y-[-1px] rounded-[1.75rem] bg-white/55 shadow-[0_22px_52px_rgba(102,73,48,0.18)]"
+                    : "translate-y-0 rounded-[1.75rem] bg-transparent shadow-none"
                 }`}
               >
-                <span className="text-sm font-normal text-[#1f2120] md:text-base md:leading-none">
+                <span className="min-w-0 flex-1 text-sm font-normal text-[#1f2120] md:text-base md:leading-[1.15]">
                   {project.title}
                 </span>
-                <span className="text-xs font-light tabular-nums text-secondary md:text-sm md:leading-none">
+                <span className="shrink-0 pt-0.5 text-xs font-light tabular-nums text-secondary md:text-sm md:leading-none">
                   {project.year}
                 </span>
               </button>
@@ -195,7 +222,7 @@ export function PortfolioInteractive({
         </div>
       </section>
 
-      <section className="order-1 flex w-full flex-col justify-start pt-2 md:fixed md:top-30 md:right-12 md:w-[calc(66.666667%-6rem)] md:max-w-[48rem] md:pt-0">
+      <section className="portfolio-desktop-bio order-1 flex w-full flex-col justify-start pt-2 md:order-2 md:min-h-screen md:w-7/12 md:flex-none md:items-start md:justify-center md:px-10 md:pt-0">
         {activeProject && !supportsHover ? (
           <div className="fixed inset-0 z-30 overflow-y-auto bg-[#ffdbbb]/72 px-6 py-8 backdrop-blur-[16px]">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.32),transparent_58%)]" />
@@ -219,53 +246,66 @@ export function PortfolioInteractive({
                   <div className="absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.28),transparent)]" />
 
                   <div className="relative h-[36rem] overflow-hidden rounded-[2.15rem] bg-[linear-gradient(180deg,#9df1eb_0%,#25dbe7_100%)] px-4 pt-7 pb-4 text-[#1f2120]">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.28),transparent_46%)]" />
-                    <div className="absolute top-4 left-4 h-3 w-8 rounded-full bg-[#f05445]" />
-                    <div className="absolute top-4 right-4 h-2.5 w-12 rounded-full bg-[#d5ece9]/80" />
+                    {activeProject.preview.type === "video" ? (
+                      <video
+                        className="absolute inset-0 h-full w-full object-cover object-top"
+                        src={activeProject.preview.src}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                    ) : (
+                      <>
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.28),transparent_46%)]" />
+                        <div className="absolute top-4 left-4 h-3 w-8 rounded-full bg-[#f05445]" />
+                        <div className="absolute top-4 right-4 h-2.5 w-12 rounded-full bg-[#d5ece9]/80" />
 
-                    <div className="relative mt-7 rounded-[1.35rem] bg-white/72 px-4 py-5 shadow-[0_16px_32px_rgba(20,20,20,0.08)] backdrop-blur-sm">
-                      <div className="mb-4 flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-black/10" />
-                        <div>
-                          <p className="text-sm font-medium">Seyit Yilmaz</p>
-                          <p className="text-[0.62rem] text-black/45">Active 10m ago</p>
+                        <div className="relative mt-7 rounded-[1.35rem] bg-white/72 px-4 py-5 shadow-[0_16px_32px_rgba(20,20,20,0.08)] backdrop-blur-sm">
+                          <div className="mb-4 flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-full bg-black/10" />
+                            <div>
+                              <p className="text-sm font-medium">Seyit Yilmaz</p>
+                              <p className="text-[0.62rem] text-black/45">Active 10m ago</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div className="w-fit rounded-2xl bg-white px-3 py-2 text-xs shadow-sm">
+                              yeah
+                            </div>
+                            <div className="w-[11rem] rounded-2xl bg-white px-3 py-2 text-xs shadow-sm">
+                              Yeah let&apos;s do that
+                            </div>
+                          </div>
+
+                          <div className="mt-4 overflow-hidden rounded-[1.15rem] bg-white p-2 shadow-sm">
+                            <div className="aspect-[4/5] overflow-hidden rounded-[0.9rem] bg-[linear-gradient(160deg,#b7d3e0_0%,#eff5fb_100%)]" />
+                          </div>
+
+                          <div className="mt-4 flex justify-start">
+                            <div className="h-16 w-16 rounded-[1rem] bg-white/90 shadow-sm" />
+                          </div>
+
+                          <div className="mt-4 flex justify-end">
+                            <div className="rounded-2xl bg-[#6b7bff] px-3 py-2 text-xs text-white shadow-sm">
+                              Oh yea, one sec!
+                            </div>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="space-y-3">
-                        <div className="w-fit rounded-2xl bg-white px-3 py-2 text-xs shadow-sm">
-                          yeah
+                        <div className="absolute inset-x-4 bottom-4 rounded-[1.35rem] bg-white/18 px-4 py-3 backdrop-blur-sm">
+                          <div className="flex items-center justify-between text-[0.62rem] uppercase tracking-[0.12em] text-black/45">
+                            <span>{activeProject.year}</span>
+                            <span>{activeProject.preview.label}</span>
+                          </div>
+                          <div className="mt-3 flex items-center gap-3">
+                            <div className="h-10 flex-1 rounded-full bg-white/65" />
+                            <div className="h-10 w-10 rounded-full bg-white/75" />
+                          </div>
                         </div>
-                        <div className="w-[11rem] rounded-2xl bg-white px-3 py-2 text-xs shadow-sm">
-                          Yeah let&apos;s do that
-                        </div>
-                      </div>
-
-                      <div className="mt-4 overflow-hidden rounded-[1.15rem] bg-white p-2 shadow-sm">
-                        <div className="aspect-[4/5] rounded-[0.9rem] bg-[linear-gradient(160deg,#b7d3e0_0%,#eff5fb_100%)]" />
-                      </div>
-
-                      <div className="mt-4 flex justify-start">
-                        <div className="h-16 w-16 rounded-[1rem] bg-white/90 shadow-sm" />
-                      </div>
-
-                      <div className="mt-4 flex justify-end">
-                        <div className="rounded-2xl bg-[#6b7bff] px-3 py-2 text-xs text-white shadow-sm">
-                          Oh yea, one sec!
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="absolute inset-x-4 bottom-4 rounded-[1.35rem] bg-white/18 px-4 py-3 backdrop-blur-sm">
-                      <div className="flex items-center justify-between text-[0.62rem] uppercase tracking-[0.12em] text-black/45">
-                        <span>{activeProject.year}</span>
-                        <span>{activeProject.preview.label}</span>
-                      </div>
-                      <div className="mt-3 flex items-center gap-3">
-                        <div className="h-10 flex-1 rounded-full bg-white/65" />
-                        <div className="h-10 w-10 rounded-full bg-white/75" />
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -281,60 +321,47 @@ export function PortfolioInteractive({
 
         {activeProject && supportsHover ? (
           <div className="mb-10 flex justify-center md:pointer-events-none md:fixed md:top-1/2 md:left-1/2 md:z-10 md:mb-0 md:w-auto md:-translate-x-1/2 md:-translate-y-1/2 md:justify-center">
-            <div className="w-full max-w-[14.4rem]">
+            <div className="w-auto">
               <div
                 ref={previewRef}
-                className="w-full rounded-[2.15rem] bg-[#f7f4f1] p-[0.16rem] shadow-[0_34px_90px_rgba(102,73,48,0.18)]"
+                className={`inline-block shadow-[0_34px_90px_rgba(102,73,48,0.18)] ${
+                  activeProject.preview.type === "video"
+                    ? "rounded-[2.4rem] bg-[#f7f4f1] p-[0.22rem]"
+                    : "rounded-[2.65rem] bg-[#f7f4f1] p-[0.18rem]"
+                }`}
               >
-                <div className="relative overflow-hidden rounded-[2rem] bg-[#f7f4f1]">
-                  <div className="pointer-events-none absolute top-2.5 left-1/2 z-20 h-1.5 w-10 -translate-x-1/2 rounded-full bg-[#d8d0c9]" />
+                  <div
+                    className={`relative overflow-hidden ${
+                      activeProject.preview.type === "video"
+                        ? "rounded-[2.15rem] bg-[#f7f4f1]"
+                        : "rounded-[2.45rem] bg-[#f7f4f1]"
+                    }`}
+                  >
+                  {activeProject.preview.type === "video" ? null : (
+                    <>
+                      <div className="pointer-events-none absolute top-2.5 left-1/2 z-20 h-1.5 w-10 -translate-x-1/2 rounded-full bg-[#d8d0c9]" />
 
-                  <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 pt-4 text-[0.56rem] font-light uppercase tracking-[0.12em] text-[#f4eee8]">
-                    <span>{activeProject.year}</span>
-                    <span>{activeProject.preview.label}</span>
-                  </div>
-
-                  <div className="relative h-[28rem] overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,#4f6968_0%,#88aba5_37%,#f2ece3_100%)] px-3.5 pt-8 pb-3.5 text-white">
-                    <div className="absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),transparent)]" />
-                    <div className="absolute inset-x-0 bottom-0 h-32 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.38),transparent_72%)]" />
-
-                    <div className="relative mt-12 rounded-[1.05rem] bg-white px-3 py-2.5 text-[#1f2120] shadow-[0_10px_24px_rgba(23,23,23,0.08)]">
-                      <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[#d9d1c9]" />
-                      <p className="text-center text-xs font-medium">
-                        {activeProject.preview.label}
-                      </p>
-                    </div>
-
-                    <div className="relative mt-3 overflow-hidden rounded-[1.05rem] bg-white/16 p-2 backdrop-blur-sm">
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {Array.from({ length: 12 }).map((_, index) => (
-                          <div
-                            key={index}
-                            className="aspect-square rounded-[0.52rem] bg-white/80"
-                            style={{
-                              opacity: 0.42 + ((index % 4) + 1) * 0.1,
-                            }}
-                          />
-                        ))}
+                      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 pt-4 text-[0.56rem] font-light uppercase tracking-[0.12em] text-[#f4eee8]">
+                        <span>{activeProject.year}</span>
+                        <span>{activeProject.preview.label}</span>
                       </div>
-                    </div>
+                    </>
+                  )}
 
-                    <div className="relative mt-4 rounded-[1.05rem] bg-white/18 p-3.5 backdrop-blur-sm">
-                      <p className="text-[0.65rem] font-light uppercase tracking-[0.12em] text-white/78">
-                        {activeProject.preview.note}
-                      </p>
-                      <h2 className="mt-3 min-h-[4.25rem] text-[1.75rem] font-medium leading-tight">
-                        {activeProject.title}
-                      </h2>
-                      <p className="mt-5 max-w-[9rem] text-[0.92rem] leading-relaxed text-white/80">
-                        Preview slot siap. Nanti tinggal sambungkan image atau
-                        video project asli.
-                      </p>
-                    </div>
+                  <div
+                    className={`relative overflow-hidden ${
+                      activeProject.preview.type === "video"
+                        ? "h-[min(46rem,84vh)] aspect-[9/19.5] rounded-[2.15rem] bg-[#f7f4f1]"
+                        : "h-[min(46rem,84vh)] aspect-[9/19.5] rounded-[2.3rem] bg-[linear-gradient(180deg,#4f6968_0%,#88aba5_37%,#f2ece3_100%)] px-3.5 pt-8 pb-3.5 text-white"
+                    }`}
+                  >
+                    <DesktopPreviewScreen project={activeProject} />
 
-                    <div className="absolute inset-x-0 bottom-2 flex justify-center">
-                      <div className="h-1.5 w-28 rounded-full bg-black/70" />
-                    </div>
+                    {activeProject.preview.type === "video" ? null : (
+                      <div className="absolute inset-x-0 bottom-2 flex justify-center">
+                        <div className="h-1.5 w-28 rounded-full bg-black/70" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -343,7 +370,7 @@ export function PortfolioInteractive({
         ) : null}
 
         {activeProject ? (
-          <div className="hidden md:pointer-events-none md:fixed md:top-1/2 md:left-[calc(50%+10.0625rem)] md:z-10 md:block md:w-[min(21rem,24vw)] md:max-w-[21rem] md:-translate-y-1/2">
+          <div className="hidden md:pointer-events-none md:fixed md:top-1/2 md:left-[calc(50%+13.5rem)] md:z-10 md:block md:w-[min(19rem,22vw)] md:max-w-[19rem] md:-translate-y-1/2">
             <div
               className="font-display translate-y-0 text-[2.25rem] leading-[0.92] tracking-[-0.045em] text-[#1f1813] uppercase opacity-100 blur-0 transition-all duration-300 ease-out xl:text-[3.2rem]"
             >
@@ -353,23 +380,23 @@ export function PortfolioInteractive({
         ) : null}
 
         <div
-          className={`transition-all duration-300 ease-out ${
+          className={`transition-all duration-300 ease-out md:max-w-[32rem] ${
             activeProject
               ? "pointer-events-none translate-y-2 opacity-0 blur-[6px]"
               : "translate-y-0 opacity-100 blur-0"
           }`}
         >
-          <h1 className="font-display mb-12 max-w-2xl text-2xl leading-[1.1] font-normal tracking-[-0.045em] text-[#1f1813] md:text-[3.5rem]">
-            {headlineName}, human interface designer at{" "}
-            <span className="font-medium text-[#664930]">{companyName}</span>
+          <h1 className="font-display mb-10 max-w-2xl text-[1.7rem] leading-[1.08] font-normal tracking-[-0.04em] text-[#1f1813] md:text-[2.9rem]">
+            {headlineName}, software{" "}
+            <span className="font-medium text-[#664930]">developer</span>
           </h1>
 
-          <div className="flex flex-col gap-4">
-            <p className="max-w-lg text-lg leading-relaxed text-secondary">
+          <div className="flex flex-col gap-3">
+            <p className="max-w-lg text-[0.98rem] leading-relaxed text-secondary md:text-[0.95rem]">
               {bio}
             </p>
 
-            <div className="mt-4 flex flex-wrap gap-8 font-sans text-[0.6875rem] font-light uppercase tracking-[0.1em] text-secondary">
+            <div className="mt-3 flex flex-wrap gap-6 font-sans text-[0.62rem] font-light uppercase tracking-[0.1em] text-secondary">
               {headerLinks.map((label) => (
                 <a
                   key={label}
