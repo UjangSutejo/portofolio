@@ -162,7 +162,7 @@ export const projects: Project[] = [
   },
 ];
 
-export const headerLinks = ["About", "Email", "LinkedIn", "Twitter"];
+export const headerLinks = ["About", "Email", "LinkedIn", "Instagram"];
 
 export const profileSwitcher = {
   cursorAssetPath: "/asset/question-mark-cursor.png" as string | null,
@@ -203,5 +203,5 @@ export const portfolioIntro = {
   companyName: "developer",
   bio: "Focused on building thoughtful, well-crafted digital experiences that balance utility, clarity, and aesthetic pleasure. Currently working independently while continuing to grow through new projects and collaborations.",
   location: "Jakarta, Indonesia",
-  footerCopyright: "© 2024 Seyit Yılmaz — All rights reserved",
+  footerCopyright: "© 2025 Ujang Sutejo — All rights reserved",
 };

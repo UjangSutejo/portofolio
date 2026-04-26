@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { portfolioIntro } from "./data/portfolio-content";
 import "./globals.css";
 
 const inter = Inter({
@@ -10,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Seyit Yılmaz — Human Interface Designer",
-  description: "Portfolio concept replicated from the exported Stitch design.",
+  title: "Ujang Setejo — Human Interface Developer",
+  description: portfolioIntro.bio,
 };
 
 export default function RootLayout({
