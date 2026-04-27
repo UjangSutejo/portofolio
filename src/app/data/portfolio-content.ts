@@ -43,20 +43,20 @@ export type ProfileSwitcherItem =
 export const projects: Project[] = [
   {
     id: "messenger-camera",
-    title: "scencepack website",
+    title: "Scenepack Website",
     year: "2026",
     preview: {
       type: "video",
       label: "Preview",
       note: "Scencepack website preview",
-      src: "/videos/scencepack.mp4",
+      src: "/videos/scenepack.mp4",
     },
     projectHeadline:
       "SCENCEPACK WEBSITE FOR MY CLIENT, CINEMATIC VISUAL ARCHIVE BUILT FOR FAST CREATIVE EDITORS",
   },
   {
     id: "dm-resharing",
-    title: "my local barbershop",
+    title: "My local Barbershop",
     year: "2025",
     preview: {
       type: "video",
@@ -69,7 +69,7 @@ export const projects: Project[] = [
   },
   {
     id: "stories-layouts",
-    title: "competition build",
+    title: "Competition build",
     year: "2025",
     preview: {
       type: "video",
@@ -82,7 +82,7 @@ export const projects: Project[] = [
   },
   {
     id: "seyit-yilmaz-v4",
-    title: "daycare landing page",
+    title: "Daycare landing page",
     year: "2025",
     preview: {
       type: "video",

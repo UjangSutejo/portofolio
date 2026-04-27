@@ -7,6 +7,7 @@ import type { HeaderLink, Project } from "../data/portfolio-content";
 const HOVER_CAPABLE_QUERY = "(hover: hover) and (pointer: fine)";
 const PREVIEW_OFFSET_X = 42;
 const PREVIEW_SCALE_FROM = 0.96;
+const DESKTOP_VIDEO_RADIUS = "rounded-[clamp(3.15rem,2.8vw,3.4rem)]";
 
 type PortfolioInteractiveProps = {
   projects: Project[];
@@ -362,14 +363,14 @@ export function PortfolioInteractive({
                 ref={previewRef}
                 className={`relative z-10 inline-block shadow-[0_34px_90px_rgba(62,84,132,0.2)] ${
                   activeProject.preview.type === "video"
-                    ? "rounded-[3.4rem] bg-transparent p-0"
+                    ? `${DESKTOP_VIDEO_RADIUS} bg-transparent p-0`
                     : "rounded-[2.8rem] bg-transparent p-0"
                 }`}
               >
                   <div
                     className={`relative overflow-hidden ${
                       activeProject.preview.type === "video"
-                        ? "rounded-[3.4rem] bg-[#f7f4f1]"
+                        ? `${DESKTOP_VIDEO_RADIUS} bg-[#f7f4f1]`
                         : "rounded-[2.55rem] bg-[#f7f4f1]"
                     }`}
                   >
@@ -387,7 +388,7 @@ export function PortfolioInteractive({
                   <div
                     className={`relative overflow-hidden ${
                       activeProject.preview.type === "video"
-                        ? "h-[min(46rem,84vh)] aspect-[9/19.5] rounded-[3.4rem] bg-[#f7f4f1]"
+                        ? `h-[min(46rem,84vh)] aspect-[9/19.5] ${DESKTOP_VIDEO_RADIUS} bg-[#f7f4f1]`
                         : "h-[min(46rem,84vh)] aspect-[9/19.5] rounded-[2.4rem] bg-[linear-gradient(180deg,#4f6968_0%,#88aba5_37%,#f2ece3_100%)] px-3.5 pt-8 pb-3.5 text-white"
                     }`}
                   >
