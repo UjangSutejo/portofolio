@@ -19,6 +19,11 @@ export type Project = {
   preview: ProjectPreview;
 };
 
+export type HeaderLink = {
+  label: string;
+  href: string;
+};
+
 export type ProfileSwitcherItem =
   | {
       id: string;
@@ -162,7 +167,12 @@ export const projects: Project[] = [
   },
 ];
 
-export const headerLinks = ["About", "Email", "LinkedIn", "Instagram"];
+export const headerLinks: HeaderLink[] = [
+  { label: "About", href: "#" },
+  { label: "Email", href: "mailto:your@email.com" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/your-profile" },
+  { label: "Instagram", href: "https://www.instagram.com/aowkv2" },
+];
 
 export const profileSwitcher = {
   cursorAssetPath: "/asset/question-mark-cursor.png" as string | null,

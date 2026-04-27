@@ -19,10 +19,28 @@ export function ProfileSwitcher({
 }: ProfileSwitcherProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [supportsHover, setSupportsHover] = useState(false);
+  const [isTouchActive, setIsTouchActive] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const ringRef = useRef<HTMLSpanElement | null>(null);
   const mediaFrameRef = useRef<HTMLSpanElement | null>(null);
   const ringTimelineRef = useRef<gsap.core.Timeline | null>(null);
   const activeItemId = items.length > 0 ? items[activeIndex % items.length]!.id : "";
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+    const updateSupport = () => {
+      setSupportsHover(mediaQuery.matches);
+    };
+
+    updateSupport();
+    mediaQuery.addEventListener("change", updateSupport);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateSupport);
+    };
+  }, []);
 
   useEffect(() => {
     if (!ringRef.current || items.length === 0) {
@@ -69,12 +87,41 @@ export function ProfileSwitcher({
   }, [items.length]);
 
   useEffect(() => {
+    if (supportsHover) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        buttonRef.current &&
+        event.target instanceof Node &&
+        buttonRef.current.contains(event.target)
+      ) {
+        setIsTouchActive(true);
+        return;
+      }
+
+      setIsTouchActive(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [supportsHover]);
+
+  useEffect(() => {
     if (!mediaFrameRef.current) {
       return;
     }
 
     const shouldRoundContent =
-      activeItemId === "japanese-logo" ? isHovered : true;
+      activeItemId === "japanese-logo"
+        ? supportsHover
+          ? isHovered
+          : isTouchActive
+        : true;
     const mediaRadius = shouldRoundContent ? "0.75rem" : "0rem";
 
     gsap.to(mediaFrameRef.current, {
@@ -83,7 +130,7 @@ export function ProfileSwitcher({
       ease: "power2.out",
       overwrite: "auto",
     });
-  }, [activeItemId, isHovered]);
+  }, [activeItemId, isHovered, isTouchActive, supportsHover]);
 
   if (items.length === 0) {
     return null;
@@ -93,12 +140,14 @@ export function ProfileSwitcher({
   const hoverCursor = cursorAssetPath
     ? `url("${cursorAssetPath}") 24 24, help`
     : "help";
+  const isRingVisible = supportsHover ? isHovered : isTouchActive;
 
   return (
     <div
       className={`md:fixed md:top-12 md:left-12 md:z-20 ${className ?? ""}`}
     >
       <button
+        ref={buttonRef}
         type="button"
         aria-label="Cycle profile switcher visual"
         onMouseEnter={() => {
@@ -107,18 +156,23 @@ export function ProfileSwitcher({
         onMouseLeave={() => {
           setIsHovered(false);
         }}
+        onPointerDown={() => {
+          if (!supportsHover) {
+            setIsTouchActive(true);
+          }
+        }}
         onClick={() => {
           setActiveIndex((currentIndex) => (currentIndex + 1) % items.length);
         }}
         className="group relative block h-[3rem] w-[3rem] rounded-none bg-transparent p-0 shadow-none outline-none md:h-[3.1rem] md:w-[3.1rem]"
         style={{
-          cursor: isHovered ? hoverCursor : "default",
+          cursor: isRingVisible ? hoverCursor : "default",
         }}
       >
         <span
           ref={ringRef}
           className={`profile-switcher-ring pointer-events-none absolute inset-0 z-20 rounded-[1rem] opacity-0 transition-opacity duration-300 ${
-            isHovered ? "opacity-100" : ""
+            isRingVisible ? "opacity-100" : ""
           }`}
           style={
             {

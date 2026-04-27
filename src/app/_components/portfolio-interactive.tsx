@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import type { Project } from "../data/portfolio-content";
+import type { HeaderLink, Project } from "../data/portfolio-content";
 
 const HOVER_CAPABLE_QUERY = "(hover: hover) and (pointer: fine)";
 const PREVIEW_OFFSET_X = 42;
@@ -10,7 +10,7 @@ const PREVIEW_SCALE_FROM = 0.96;
 
 type PortfolioInteractiveProps = {
   projects: Project[];
-  headerLinks: string[];
+  headerLinks: HeaderLink[];
   headlineName: string;
   bio: string;
 };
@@ -90,6 +90,8 @@ export function PortfolioInteractive({
   );
   const previewRef = useRef<HTMLDivElement | null>(null);
   const mobilePreviewRef = useRef<HTMLDivElement | null>(null);
+  const projectListRef = useRef<HTMLDivElement | null>(null);
+  const introRef = useRef<HTMLDivElement | null>(null);
 
   const activeProject =
     projects.find((project) => project.id === activeProjectId) ?? null;
@@ -155,6 +157,38 @@ export function PortfolioInteractive({
     );
   }, [activeProject, supportsHover]);
 
+  useEffect(() => {
+    const playIntro = () => {
+      if (!projectListRef.current || !introRef.current) {
+        return;
+      }
+
+      const projectButtons = Array.from(projectListRef.current.querySelectorAll("button"));
+
+      gsap
+        .timeline({
+          defaults: { ease: "power3.out" },
+        })
+        .fromTo(
+          introRef.current,
+          { autoAlpha: 0, y: 18 },
+          { autoAlpha: 1, y: 0, duration: 0.6 },
+        )
+        .fromTo(
+          projectButtons,
+          { autoAlpha: 0, y: 12 },
+          { autoAlpha: 1, y: 0, duration: 0.42, stagger: 0.05 },
+          "-=0.18",
+        );
+    };
+
+    window.addEventListener("portfolio-loading-complete", playIntro);
+
+    return () => {
+      window.removeEventListener("portfolio-loading-complete", playIntro);
+    };
+  }, []);
+
   return (
     <>
       <section
@@ -165,6 +199,7 @@ export function PortfolioInteractive({
         }`}
       >
         <div
+          ref={projectListRef}
           className="flex w-full flex-col gap-1 border-t border-on-surface/10 md:w-[16.75rem] md:border-t-0"
           onMouseLeave={() => {
             if (supportsHover) {
@@ -241,11 +276,11 @@ export function PortfolioInteractive({
               ref={mobilePreviewRef}
               className="relative z-10 mx-auto flex min-h-full w-full max-w-[18.75rem] flex-col justify-start pt-10"
             >
-              <div className="rounded-[2.4rem] bg-[#f7f4f1] p-[0.22rem] shadow-[0_36px_90px_rgba(102,73,48,0.22)]">
-                <div className="relative overflow-hidden rounded-[2.15rem] bg-[#f7f4f1]">
+              <div className="rounded-[3.1rem] bg-transparent p-0 shadow-[0_34px_90px_rgba(62,84,132,0.2)]">
+                <div className="relative overflow-hidden rounded-[3.1rem] bg-[#f7f4f1]">
                   <div className="absolute inset-x-0 top-0 h-16 bg-[linear-gradient(180deg,rgba(255,255,255,0.28),transparent)]" />
 
-                  <div className="relative h-[36rem] overflow-hidden rounded-[2.15rem] bg-[linear-gradient(180deg,#9df1eb_0%,#25dbe7_100%)] px-4 pt-7 pb-4 text-[#1f2120]">
+                  <div className="relative h-[40rem] overflow-hidden rounded-[3.1rem] bg-[linear-gradient(180deg,#9df1eb_0%,#25dbe7_100%)] px-4 pt-7 pb-4 text-[#1f2120]">
                     {activeProject.preview.type === "video" ? (
                       <video
                         className="absolute inset-0 h-full w-full object-cover object-top"
@@ -321,20 +356,21 @@ export function PortfolioInteractive({
 
         {activeProject && supportsHover ? (
           <div className="mb-10 flex justify-center md:pointer-events-none md:fixed md:top-1/2 md:left-1/2 md:z-10 md:mb-0 md:w-auto md:-translate-x-1/2 md:-translate-y-1/2 md:justify-center">
-            <div className="w-auto">
+            <div className="relative isolate w-auto">
+              <div className="pointer-events-none absolute inset-x-[-2rem] top-[10%] bottom-[-0.5rem] z-0 rounded-[4rem] bg-[radial-gradient(ellipse_at_center,rgba(74,98,154,0.26),rgba(74,98,154,0.12)_36%,transparent_74%)] blur-[42px] md:inset-x-[-2.5rem] md:bottom-[-0.75rem]" />
               <div
                 ref={previewRef}
-                className={`inline-block shadow-[0_34px_90px_rgba(102,73,48,0.18)] ${
+                className={`relative z-10 inline-block shadow-[0_34px_90px_rgba(62,84,132,0.2)] ${
                   activeProject.preview.type === "video"
-                    ? "rounded-[2.4rem] bg-[#f7f4f1] p-[0.22rem]"
-                    : "rounded-[2.65rem] bg-[#f7f4f1] p-[0.18rem]"
+                    ? "rounded-[3.4rem] bg-transparent p-0"
+                    : "rounded-[2.8rem] bg-transparent p-0"
                 }`}
               >
                   <div
                     className={`relative overflow-hidden ${
                       activeProject.preview.type === "video"
-                        ? "rounded-[2.15rem] bg-[#f7f4f1]"
-                        : "rounded-[2.45rem] bg-[#f7f4f1]"
+                        ? "rounded-[3.4rem] bg-[#f7f4f1]"
+                        : "rounded-[2.55rem] bg-[#f7f4f1]"
                     }`}
                   >
                   {activeProject.preview.type === "video" ? null : (
@@ -351,8 +387,8 @@ export function PortfolioInteractive({
                   <div
                     className={`relative overflow-hidden ${
                       activeProject.preview.type === "video"
-                        ? "h-[min(46rem,84vh)] aspect-[9/19.5] rounded-[2.15rem] bg-[#f7f4f1]"
-                        : "h-[min(46rem,84vh)] aspect-[9/19.5] rounded-[2.3rem] bg-[linear-gradient(180deg,#4f6968_0%,#88aba5_37%,#f2ece3_100%)] px-3.5 pt-8 pb-3.5 text-white"
+                        ? "h-[min(46rem,84vh)] aspect-[9/19.5] rounded-[3.4rem] bg-[#f7f4f1]"
+                        : "h-[min(46rem,84vh)] aspect-[9/19.5] rounded-[2.4rem] bg-[linear-gradient(180deg,#4f6968_0%,#88aba5_37%,#f2ece3_100%)] px-3.5 pt-8 pb-3.5 text-white"
                     }`}
                   >
                     <DesktopPreviewScreen project={activeProject} />
@@ -380,32 +416,40 @@ export function PortfolioInteractive({
         ) : null}
 
         <div
-          className={`transition-all duration-300 ease-out md:max-w-[32rem] ${
+          className={`transition-all duration-300 ease-out md:fixed md:z-10 md:max-w-[32rem] ${
             activeProject
               ? "pointer-events-none translate-y-2 opacity-0 blur-[6px]"
               : "translate-y-0 opacity-100 blur-0"
           }`}
         >
-          <h1 className="font-display mb-10 max-w-2xl text-[1.7rem] leading-[1.08] font-normal tracking-[-0.04em] text-[#1f1813] md:text-[2.9rem]">
-            {headlineName}, software{" "}
-            <span className="font-medium text-[#664930]">developer</span>
-          </h1>
+          <div ref={introRef}>
+            <h1 className="font-display mb-10 max-w-2xl text-[1.7rem] leading-[1.08] font-normal tracking-[-0.04em] text-[#1f1813] md:text-[2.9rem]">
+              {headlineName}, software{" "}
+              <span className="font-medium text-[#664930]">developer</span>
+            </h1>
 
-          <div className="flex flex-col gap-3">
-            <p className="max-w-lg text-[0.98rem] leading-relaxed text-secondary md:text-[0.95rem]">
-              {bio}
-            </p>
+            <div className="flex flex-col gap-3">
+              <p className="max-w-lg text-[0.98rem] leading-relaxed text-secondary md:text-[0.95rem]">
+                {bio}
+              </p>
 
-            <div className="mt-3 flex flex-wrap gap-6 font-sans text-[0.62rem] font-light uppercase tracking-[0.1em] text-secondary">
-              {headerLinks.map((label) => (
-                <a
-                  key={label}
-                  href="#"
-                  className="transition-all hover:underline hover:opacity-80 underline-offset-4 decoration-[#664930]"
-                >
-                  {label}
-                </a>
-              ))}
+              <div className="mt-3 flex flex-wrap gap-6 font-sans text-[0.62rem] font-light uppercase tracking-[0.1em] text-secondary">
+                {headerLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target={link.href.startsWith("http") ? "_blank" : undefined}
+                    rel={
+                      link.href.startsWith("http")
+                        ? "noreferrer noopener"
+                        : undefined
+                    }
+                    className="transition-all hover:underline hover:opacity-80 underline-offset-4 decoration-[#664930]"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </div>

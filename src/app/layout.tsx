@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { InitialLoadingOverlay } from "./_components/initial-loading-overlay";
 import { portfolioIntro } from "./data/portfolio-content";
 import "./globals.css";
 
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full bg-[#FFDBBB] antialiased`}>
       <body className="flex min-h-full flex-col bg-[#FFDBBB] text-[#664930]">
+        <InitialLoadingOverlay />
         {children}
       </body>
     </html>
