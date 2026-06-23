@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ujang Setejo — Human Interface Developer",
+  title: "Ujang Setejo — Software Developer",
   description: portfolioIntro.bio,
 };
 
