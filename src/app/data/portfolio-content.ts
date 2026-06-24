@@ -209,7 +209,7 @@ export const profileSwitcher = {
 };
 
 export const portfolioIntro = {
-  headlineName: "Ujang Sutejo",
+  headlineName: "Isrataya Syawalry",
   companyName: "developer",
   bio: "Focused on building thoughtful, well-crafted digital experiences that balance utility, clarity, and aesthetic pleasure. Currently working independently while continuing to grow through new projects and collaborations.",
   location: "Jakarta, Indonesia",
